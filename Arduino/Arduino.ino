@@ -38,7 +38,7 @@ int feedingHour = 0;
 int feedingMinute = 0;
 
   //message between esp and arduino
-char message[100]
+char message[100];
 
 //--------------------SET UP----------------------------
 
