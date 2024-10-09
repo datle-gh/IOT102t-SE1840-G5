@@ -1,16 +1,3 @@
-////define pin with GPIO 
-//static const uint8_t D0 = 16;
-//static const uint8_t D1 = 5;
-//static const uint8_t D2 = 4;
-//static const uint8_t D3 = 0;
-//static const uint8_t D4 = 2;
-//static const uint8_t D5 = 14;
-//static const uint8_t D6 = 12;
-//static const uint8_t D7 = 13;
-//static const uint8_t D8 = 15;
-//static const uint8_t D9 = 3;
-//static const uint8_t D10 = 1;
-
 //define blynk token
 #define BLYNK_TEMPLATE_ID "TMPL6zLs-GJfK"
 #define BLYNK_TEMPLATE_NAME "Pet Feeder"
@@ -28,8 +15,8 @@
 #include <LiquidCrystal_I2C.h>
 
 //wifi credential
-char ssid[] = "FPt-Student"; //Wifi name
-char pass[] = "87654321"; //Wifi password
+char ssid[] = "FPTU_Library"; //Wifi name
+char pass[] = "12345678"; //Wifi password
 
 //Blynk: Virtual timer
 #define VIRTUAL_PIN_HOUR_INPUT V1
@@ -46,14 +33,14 @@ NTPClient timeClient(ntpUDP, "asia.pool.ntp.org", 7 * 3600, 60000);
 BlynkTimer timer;
 
 //Set up pin to communicate with Arduino by UART
-#define RX_PIN D9 
-#define TX_PIN D10 
+#define RX_PIN 13 //D7
+#define TX_PIN 15 //D8
 SoftwareSerial arduinoSerial(RX_PIN, TX_PIN);
 
 // Declare LCD (I2C address, columns, rows)
 LiquidCrystal_I2C lcd(0x27, 16, 2);
-#define SDA_PIN D2
-#define SCL_PIN D1
+#define SDA_PIN 4//D2
+#define SCL_PIN 5//D1
 
 //define variable
 float weightLevelVal;
@@ -63,8 +50,8 @@ String message;
 int feedingHour = 0;
 int feedingMinute = 0;
 // variable to store the current time
-int currentHour = 0;
-int currentMinute = 0;
+int currentHour = 1;
+int currentMinute = 1;
 
 //-------------------SET UP-------------------------------------------------
 
@@ -98,23 +85,18 @@ void setup() {
 //Input: virtual pin V1 (on Blynk)
 BLYNK_WRITE(VIRTUAL_PIN_HOUR_INPUT) {
   feedingHour = param.asInt();  // Get value from Slider 1 (hour)
-  Serial.print("Selected Hour: ");
-  Serial.println(feedingHour);
+  Serial.println("Time set: ");
+  // Serial.println(feedingHour);
+  printSerialTime(feedingHour, feedingMinute);
 }
 
 // Event handler from Blynk: Get Minute input
 //Input: virtual pin V2 (on Blynk)
 BLYNK_WRITE(VIRTUAL_PIN_MINUTE_INPUT){
   feedingMinute = param.asInt();  // Get value from Slider 2 (minute)
-  Serial.print("Selected Minute: ");
-  Serial.println(feedingMinute);
-}
-
-//call method after a time period based on timer.setInterval, ignore loop()
-void myTimerEvent(){
-  getRealTime();
-  sendBlynkWeight();
-  displayTimeSet();
+  Serial.println("Time set: ");
+  // Serial.println(feedingMinute);
+  printSerialTime(feedingHour, feedingMinute);
 }
 
 //Receive data from Arduino and send the weight value to Blynk
@@ -123,6 +105,7 @@ void sendBlynkWeight(){
   Serial.println(message);
   message = arduinoSerial.read();
   weightLevelVal = message.toFloat(); 
+  Serial.println(weightLevelVal);
   Blynk.virtualWrite(VIRTUAL_PIN_WEIGHT_OUTPUT, weightLevelVal);
 }
 
@@ -131,6 +114,8 @@ void getRealTime(){
   timeClient.update();
   currentHour = timeClient.getHours();
   currentMinute = timeClient.getMinutes();
+  Serial.println("Real time: ");
+  printSerialTime(currentHour, currentMinute);
 }
 
 // Display the time on LCD
@@ -147,6 +132,27 @@ void displayTimeSet(){
     lcd.print(feedingMinute);
 }
 
+void printSerialTime(int hour, int minute){
+  Serial.print(hour);
+  Serial.print(":");
+  Serial.println(minute);
+}
+
+bool checkTimeSet(){
+  bool isTimeReached = false;
+  if(currentHour == feedingHour && currentMinute == feedingMinute)
+  {
+    isTimeReached = true;
+  }
+  return isTimeReached;
+}
+
+//call method after a time period based on timer.setInterval, ignore loop()
+void myTimerEvent(){
+  getRealTime();
+  sendBlynkWeight();
+  displayTimeSet();
+}
 //------------------------LOOP----------------------------------------------
 
 void loop() {
@@ -156,7 +162,7 @@ void loop() {
   timer.run();
 
   //send signal to feed
-  if (currentHour == feedingHour && currentMinute == feedingMinute) {
+  if (checkTimeSet()) {
     Serial.println("Feeding the pet...");
     lcd.clear();
     lcd.setCursor(0, 0);
