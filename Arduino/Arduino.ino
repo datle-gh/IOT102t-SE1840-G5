@@ -7,14 +7,15 @@
 //define pin, variable, constraint
 
 //Setup pin to communicate with esp by UART
-#define RX_PIN 0 // RX pin for Software Serial
-#define TX_PIN 1 // TX pin for Software Serial
+#define RX_PIN 10//2 0 // RX pin for Software Serial
+#define TX_PIN 11//3 1 // TX pin for Software Serial
 SoftwareSerial espSerial(RX_PIN, TX_PIN); // RX = 0, TX = 1
 
   //load cell
 const int LOADCELL_DOUT_PIN = A0;
 const int LOADCELL_SCK_PIN = A1;
 HX711 scale;
+const float CALIBRATING = 0;// this value is obtained by calibrating the scale with known weights; see the README for details
 
   //food door: servo motor
 Servo foodDoor;  //servo object
@@ -55,7 +56,7 @@ void setup() {
 
   Serial.println("Initializing the scale");
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
-  scale.set_scale(-533.6609523810);  // this value is obtained by calibrating the scale with known weights; see the README for details
+  scale.set_scale(CALIBRATING); // this value is obtained by calibrating the scale with known weights; see the README for details
   scale.tare();                      // reset the scale to 0
 
   Serial.begin(9600);
@@ -121,7 +122,7 @@ bool checkTimeSet(){
 //read data from load cell sensor
 void readScale() {
   Serial.println("After setting up the scale:");
-  weightCurentVal = scale.get_units();
+  weightCurentVal = scale.get_units(10);
 }
 
 //read the button state
