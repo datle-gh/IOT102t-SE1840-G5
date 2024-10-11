@@ -15,7 +15,7 @@ SoftwareSerial espSerial(RX_PIN, TX_PIN); // RX = 0, TX = 1
 const int LOADCELL_DOUT_PIN = A0;
 const int LOADCELL_SCK_PIN = A1;
 HX711 scale;
-const float CALIBRATING = 0;// this value is obtained by calibrating the scale with known weights; see the README for details
+const float CALIBRATING = -70.833;// this value is obtained by calibrating the scale with known weights; see the README for details
 
   //food door: servo motor
 Servo foodDoor;  //servo object
