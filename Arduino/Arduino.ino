@@ -1,37 +1,26 @@
 #include <Wire.h>
-// #include <SoftI2C.h>
-//Library
 #include <Arduino.h>
 #include <HX711.h>
 #include <Servo.h>
-// #include <SoftwareSerial.h>
 
 //define pin, variable, constraint
-
-// //Setup pin to communicate with esp by UART
-// #define RX_PIN 10//2 0 // RX pin for Software Serial
-// #define TX_PIN 11//3 1 // TX pin for Software Serial
-// SoftwareSerial espSerial(RX_PIN, TX_PIN); // RX = 0, TX = 1
-
 #define ESP8266_I2C_ADDRESS 8
 
   //load cell
 const int LOADCELL_DOUT_PIN = A0;
 const int LOADCELL_SCK_PIN = A1;
 HX711 scale;
-const float CALIBRATING = 412.234;// this value is obtained by calibrating the scale with known weights; see the README for details
-// const int weightLowestVal = 100;   //100g
+const float CALIBRATING = 412.234;// this value is obtained by calibrating the scale with known weights
 const int weightHighestVal = 300;  //300g
 float weightCurrentVal = 0;
 float weightFoodSpout = 22;
 
   //food door: servo motor
-Servo foodDoor;  //servo object
+Servo foodDoor;
 const int foodDoorPin = 9;
 bool isDoorOpen = false;
 int closedAngle = 0;
-int openedAngle = 180;
-
+int openedAngle = 130;
 bool isTimeReached;
 
   //led
@@ -97,7 +86,7 @@ void turnLedOff(){
 //rotate servo to open
 void openFoodDoor() {
   if(isDoorOpen == false){
-    foodDoor.write(openedAngle);  // Rotate to 100 degree
+    foodDoor.write(openedAngle);  
     isDoorOpen = true;
   }
 }
@@ -105,7 +94,7 @@ void openFoodDoor() {
 //rotate servo to close
 void closeFoodDoor() {
   if(isDoorOpen == true){
-    foodDoor.write(closedAngle);  // Rotate to 0 degree
+    foodDoor.write(closedAngle); 
     isDoorOpen = false;
   }
 }
@@ -123,12 +112,12 @@ bool checkEnoughFood(){
 void readScale() {
   Serial.println("After setting up the scale:");
   weightCurrentVal = scale.get_units();
-  weightCurrentVal = weightCurrentVal - weightFoodSpout; //box's weight = 22g
+  weightCurrentVal = weightCurrentVal - weightFoodSpout;
   if(weightCurrentVal <=0){
     weightCurrentVal = 0;
   }
   Serial.print("Food weight (g): ");
-  Serial.println(weightCurrentVal);  // Print the food weight value to Serial Monitor
+  Serial.println(weightCurrentVal);
 }
 
 // Hàm gửi dữ liệu cân nặng cho ESP8266 khi có yêu cầu
@@ -152,13 +141,12 @@ void receiveEvent(int bytes) {
 void loop() {
 
   // Read load sensor value
-  readScale();  // Read the weight value
+  readScale();
   readButton();
-  if(buttonState == HIGH){
-    Serial.println("Button pressed!");
-  }
+  // if(buttonState == HIGH){
+  //   Serial.println("Button pressed!");
+  // }
 
-  // send data to esp
   //check button state and feeding time to dispense food
   if ( (buttonState == HIGH) || isTimeReached) {
     do {
