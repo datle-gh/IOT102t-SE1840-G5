@@ -8,15 +8,14 @@
 //include library
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
-// #include <SoftwareSerial.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
 //wifi credential
-char ssid[] = "Bich Tram"; //Wifi name :FPTU_Library     FPt-Student     Bích Trâm
-char pass[] = "18042004"; //Wifi password         18042004
+char ssid[] = "FPTU_Library"; //Wifi name :FPTU_Library     FPt-Student     Bích Trâm   Bich Tram
+char pass[] = "12345678"; //Wifi password         18042004
 
 //Blynk: Virtual timer
 #define VIRTUAL_PIN_HOUR_INPUT V1
@@ -31,11 +30,6 @@ NTPClient timeClient(ntpUDP, "asia.pool.ntp.org", 7 * 3600, 60000);
 //allows you to send data periodically. 
 //prevents spamming the Blynk.Cloud with thousands of messages from your hardware
 BlynkTimer timer;
-
-// //Set up pin to communicate with Arduino by UART
-// #define RX_PIN D5 //D7  
-// #define TX_PIN D6 //D8
-// SoftwareSerial arduinoSerial(RX_PIN, TX_PIN);
 
 // Địa chỉ I2C của LCD và Arduino
 #define LCD_I2C_ADDRESS 0x27  // Địa chỉ I2C của LCD
@@ -53,6 +47,7 @@ String message;
 // variable to store feeding time
 int feedingHour = 0;
 int feedingMinute = 0;
+
 // variable to store the current time
 int currentHour = 0;
 int currentMinute = 0;
@@ -113,7 +108,7 @@ void printSerialTime(int hour, int minute, int seconds){
 
 bool checkTimeSet(){
   bool isTimeReached = false;
-  if((currentHour == feedingHour) && (currentMinute == feedingMinute) && (currentSeconds = 0))
+  if((currentHour == feedingHour) && (currentMinute == feedingMinute) && (currentSeconds == 0))
   {
     isTimeReached = true;
   }
@@ -135,6 +130,7 @@ void receiveWeightData() {
   }
 }
 
+//send signal to open food door
 void sendFeedingSignal() {
   Wire.beginTransmission(ARDUINO_I2C_ADDRESS);
   byte signal = (checkTimeSet()) ? 1 : 0;
@@ -145,7 +141,6 @@ void sendFeedingSignal() {
 //call method after a time period based on timer.setInterval, ignore loop()
 void myTimerEvent(){
   getRealTime();
-  // receiveBlynkWeight();
   receiveWeightData();
   sendFeedingSignal();
   displayTimeSet();
@@ -157,7 +152,6 @@ void setup() {
   //debug console
   Serial.begin(9600);
   //set up to communicate with ESP
-  // arduinoSerial.begin(9600);
     //set up lcd
   Wire.begin(SDA_PIN, SCL_PIN); //set up I2C pins
 
@@ -169,7 +163,7 @@ void setup() {
 
   //set up a function to be called at any time
   //  5000 milliseconds (5 seconds), and the letter L is used to specify that this value is a long integer
-  timer.setInterval(5000L , myTimerEvent);
+  timer.setInterval(1000L , myTimerEvent);
 
   lcd.init();
   lcd.backlight();
@@ -185,7 +179,6 @@ void loop() {
   //run timer to send data periodically
   timer.run();
 
-
   // sendBlynkWeight();
   // send signal to feed
   if (checkTimeSet()) {
@@ -194,5 +187,4 @@ void loop() {
     lcd.setCursor(0, 0);
     lcd.print("Feeding now!");
   }
-  // delay(800);
 }
