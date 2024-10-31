@@ -1,11 +1,9 @@
-//define blynk token
 #define BLYNK_TEMPLATE_ID "TMPL6zLs-GJfK"
 #define BLYNK_TEMPLATE_NAME "Pet Feeder"
 #define BLYNK_AUTH_TOKEN "iL0Bwv9Lgm39QtufdqnMf9QVuRgJuYIV"
 
 #define BLYNK_PRINT Serial
 
-//include library
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
 #include <NTPClient.h>
@@ -14,8 +12,8 @@
 #include <LiquidCrystal_I2C.h>
 
 //wifi credential
-char ssid[] = "FPTU_Library"; //Wifi name :FPTU_Library     FPt-Student     Bích Trâm   Bich Tram
-char pass[] = "12345678"; //Wifi password         18042004
+char ssid[] = "Bich Tram"; //Wifi name :FPTU_Library     FPt-Student     Bích Trâm   Bich Tram
+char pass[] = "18042004"; //Wifi password         18042004
 
 //Blynk: Virtual timer
 #define VIRTUAL_PIN_HOUR_INPUT V1
@@ -28,7 +26,6 @@ NTPClient timeClient(ntpUDP, "asia.pool.ntp.org", 7 * 3600, 60000);
 
 //Blynk: creates the timer object. 
 //allows you to send data periodically. 
-//prevents spamming the Blynk.Cloud with thousands of messages from your hardware
 BlynkTimer timer;
 
 // Địa chỉ I2C của LCD và Arduino
@@ -37,37 +34,32 @@ BlynkTimer timer;
 
 // Declare LCD (I2C address, columns, rows)
 LiquidCrystal_I2C lcd(LCD_I2C_ADDRESS, 16, 2);
-#define SDA_PIN D2//D2
-#define SCL_PIN D1//D1
+#define SDA_PIN D2
+#define SCL_PIN D1
 
-//define variable
 float weightLevelVal;
 String message;
 
-// variable to store feeding time
 int feedingHour = 0;
 int feedingMinute = 0;
 
-// variable to store the current time
 int currentHour = 0;
 int currentMinute = 0;
 int currentSeconds = 0;
 
 //--------------------METHOD--------------------------------------
 
-// Event handler from Blynk: Get Hour input
-//Input: virtual pin V1 (on Blynk)
+//Get Hour input
 BLYNK_WRITE(VIRTUAL_PIN_HOUR_INPUT) {
-  feedingHour = param.asInt();  // Get value from Slider 1 (hour)
+  feedingHour = param.asInt(); 
   Serial.println("Time set: ");
   // Serial.println(feedingHour);
   printSerialTime(feedingHour, feedingMinute, 0);
 }
 
-// Event handler from Blynk: Get Minute input
-//Input: virtual pin V2 (on Blynk)
+//Get Minute input
 BLYNK_WRITE(VIRTUAL_PIN_MINUTE_INPUT){
-  feedingMinute = param.asInt();  // Get value from Slider 2 (minute)
+  feedingMinute = param.asInt();
   Serial.println("Time set: ");
   // Serial.println(feedingMinute);
   printSerialTime(feedingHour, feedingMinute, 0);
@@ -93,7 +85,7 @@ void displayTimeSet(){
     lcd.print(feedingHour);
     lcd.print(":");
     if (feedingMinute < 10) {
-      lcd.print("0");  // Add leading zero if minute < 10
+      lcd.print("0"); 
     }
     lcd.print(feedingMinute);
 }
@@ -149,20 +141,16 @@ void myTimerEvent(){
 //-------------------SET UP-------------------------------------------------
 
 void setup() {
-  //debug console
   Serial.begin(9600);
-  //set up to communicate with ESP
-    //set up lcd
+
   Wire.begin(SDA_PIN, SCL_PIN); //set up I2C pins
 
-  //set up Blynk
   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
 
   // Initialize NTP Client
   timeClient.begin();
 
   //set up a function to be called at any time
-  //  5000 milliseconds (5 seconds), and the letter L is used to specify that this value is a long integer
   timer.setInterval(1000L , myTimerEvent);
 
   lcd.init();
@@ -174,12 +162,9 @@ void setup() {
 //------------------------LOOP----------------------------------------------
 
 void loop() {
-  // Run Blynk
   Blynk.run();
-  //run timer to send data periodically
   timer.run();
 
-  // sendBlynkWeight();
   // send signal to feed
   if (checkTimeSet()) {
     Serial.println("Feeding the pet...");

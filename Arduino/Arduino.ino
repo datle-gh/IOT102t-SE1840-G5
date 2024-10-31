@@ -3,17 +3,16 @@
 #include <HX711.h>
 #include <Servo.h>
 
-//define pin, variable, constraint
 #define ESP8266_I2C_ADDRESS 8
 
   //load cell
 const int LOADCELL_DOUT_PIN = A0;
 const int LOADCELL_SCK_PIN = A1;
 HX711 scale;
-const float CALIBRATING = 412.234;// this value is obtained by calibrating the scale with known weights
-const int weightHighestVal = 300;  //300g
+const float CALIBRATING = 405.586;// this value is obtained by calibrating the scale with known weights
+const int weightHighestVal = 90;
 float weightCurrentVal = 0;
-float weightFoodSpout = 22;
+float weightFoodSpout = 36;
 
   //food door: servo motor
 Servo foodDoor;
@@ -23,38 +22,30 @@ int closedAngle = 0;
 int openedAngle = 130;
 bool isTimeReached;
 
-  //led
 const int ledPin =  4;
 int ledState = LOW;
 
-  //button
 const int buttonPin =  7;
 int buttonState = LOW;
-
-  //message between esp and arduino
-char message[100];
 
 //--------------------SET UP----------------------------
 
 void setup() {
-  //button 
   pinMode(buttonPin, INPUT);  
 
-  //led
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, ledState);
 
-  //servo set up
   foodDoor.attach(foodDoorPin);
   foodDoor.write(closedAngle); 
 
   Serial.println("Initializing the scale");
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
   scale.set_scale(CALIBRATING); // this value is obtained by calibrating the scale with known weights; see the README for details
-  scale.tare();                      // reset the scale to 0
+  scale.tare();                    
 
   Serial.begin(9600);
-  // espSerial.begin(9600);
+
   Wire.begin(ESP8266_I2C_ADDRESS);
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
@@ -139,13 +130,8 @@ void receiveEvent(int bytes) {
 //-----------------------------LOOP-------------------------------------
 
 void loop() {
-
-  // Read load sensor value
   readScale();
   readButton();
-  // if(buttonState == HIGH){
-  //   Serial.println("Button pressed!");
-  // }
 
   //check button state and feeding time to dispense food
   if ( (buttonState == HIGH) || isTimeReached) {
@@ -153,11 +139,11 @@ void loop() {
       turnLedOn();
       openFoodDoor();
       readScale();
-      delay(800);
+      delay(200);
     } while (!checkEnoughFood());
     isTimeReached = false;
   }
   turnLedOff();
   closeFoodDoor();
-  delay(800);
+  delay(200);
 }
