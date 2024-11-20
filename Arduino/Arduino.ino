@@ -9,17 +9,17 @@
 const int LOADCELL_DOUT_PIN = A0;
 const int LOADCELL_SCK_PIN = A1;
 HX711 scale;
-const float CALIBRATING = 405.586;// this value is obtained by calibrating the scale with known weights
-const int weightHighestVal = 90;
+const float CALIBRATING = 413.96;// this value is obtained by calibrating the scale with known weights
+const int weightHighestVal = 100;
 float weightCurrentVal = 0;
-float weightFoodSpout = 36;
+float weightFoodSpout = 18;
 
   //food door: servo motor
 Servo foodDoor;
 const int foodDoorPin = 9;
 bool isDoorOpen = false;
 int closedAngle = 0;
-int openedAngle = 130;
+int openedAngle = 90;
 bool isTimeReached;
 
 const int ledPin =  4;
@@ -139,11 +139,9 @@ void loop() {
       turnLedOn();
       openFoodDoor();
       readScale();
-      delay(200);
     } while (!checkEnoughFood());
     isTimeReached = false;
   }
   turnLedOff();
   closeFoodDoor();
-  delay(200);
 }
